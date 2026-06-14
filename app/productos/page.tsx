@@ -1,148 +1,183 @@
-import CardProducto from "./components/CardProducto"
+'use client';
 
-const subcategorias = [
-    { label: "Arroz y menestra", count: 124 },
-    { label: "Aceites", count: 45 },
-    { label: "Fideos", count: 89 },
-    { label: "Conservas", count: 67 },
-]
+import { useEffect, useState } from 'react';
+import { Producto } from "./types/producto";
+import Navbar from "../components/Navbar";
+import CardProducto from "./components/CardProducto";
+import { HiFunnel, HiSquares2X2, HiChevronRight, HiArrowPath } from 'react-icons/hi2';
 
-const marcas = [
-    "Primor",
-    "Costeño",
-    "Anita",
-    "Gloria",
-    "Faro"
-]
+export default function ProductosPage() {
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [productosFiltrados, setProductosFiltrados] = useState<Producto[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const productos = [
-    {
-        imagen: "/products/primor.webp",
-        marca: "PRIMOR",
-        nombre: "Aceite Vegetal Botella 1L",
-        precio: 9.20
-    },
-    {
-        imagen: "/products/costeño.webp",
-        marca: "COSTEÑO",
-        nombre: "Arroz Costeño Bolsa 1kg",
-        precio: 4.50
+  const [minPrice, setMinPrice] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<string>('');
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>('');
 
-    },
-    {
-        imagen: "/products/anita.webp",
-        marca: "ANITA",
-        nombre: "Fideos Anita Bolsa 500g",
-        precio: 2.20
-    },
-    {
-        imagen: "/products/gloria.webp",
-        marca: "GLORIA",
-        nombre: "Leche Gloria Bolsa 400g",
-        precio: 3.80
-    },
-    {
-        imagen: "/products/florida.webp",
-        marca: "FLORIDA",
-        nombre: "Trozos de Atun Lata 170g",
-        precio: 5.50
-        
-    },
-    {
-        imagen: "/products/kikko.webp",
-        marca: "KIKKO",
-        nombre: "Sillao Botella 500ml",
-        precio: 4.90,
-        
-    }
-]
+  useEffect(() => {
+    const fetchProductosActivos = async () => {
+      const apiBase = process.env.NEXT_PUBLIC_API || "http://localhost:5000/api";
+      try {
+        const res = await fetch(`${apiBase}/productos/activos`);
+        if (res.ok) {
+          const data: Producto[] = await res.json();
+          setProductos(data);
+          setProductosFiltrados(data);
+        }
+      } catch (error) {
+        console.error("Error al cargar productos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProductosActivos();
+  }, []);
 
-export default function Productos() {
+  const conteoCategorias = productos.reduce((acc, p) => {
+    const cat = p.categoria || 'Otros';
+    acc[cat] = (acc[cat] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const aplicarFiltros = () => {
+    let resultado = [...productos];
+    if (minPrice) resultado = resultado.filter(p => p.precio >= parseFloat(minPrice));
+    if (maxPrice) resultado = resultado.filter(p => p.precio <= parseFloat(maxPrice));
+    if (categoriaSeleccionada) resultado = resultado.filter(p => (p.categoria || 'Otros') === categoriaSeleccionada);
+    setProductosFiltrados(resultado);
+  };
+
+  const limpiarFiltros = () => {
+    setMinPrice('');
+    setMaxPrice('');
+    setCategoriaSeleccionada('');
+    setProductosFiltrados(productos);
+  };
+
+  if (loading) {
     return (
-        <div className="flex gap-6">
-            <div className="w-64 shrink-0">
-                {/* Sidebar de categorías */}
-                <div className="bg-white py-4 px-6 rounded-lg border border-gray-300">
-                    <h2 className="text-xl font-black border-b border-red-800 pb-3">Categorías</h2>
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50 gap-2">
+        <HiArrowPath className="w-6 h-6 text-blue-950 animate-spin" />
+        <p className="text-xs font-bold text-blue-950 uppercase tracking-widest">Cargando...</p>
+      </div>
+    );
+  }
 
-                    <div className="flex justify-between items-center px-2 py-2 mt-4 hover:bg-gray-100 rounded-md cursor-pointer">
-                        <h3 className="text-red-800 font-semibold">Abarrotes</h3>
-                        <span className="text-red-800">›</span>
-                    </div>
+  return (
+    <div className="bg-gray-50 min-h-screen flex flex-col">
+      {/* El Navbar se mantiene arriba */}
+      <Navbar />
 
-                    <div className="flex flex-col">
-                        {subcategorias.map((sub) => (
-                            <div key={sub.label} className="flex justify-between items-center px-2 py-2 hover:bg-gray-100 rounded-md cursor-pointer">
-                                <span className="text-gray-700 text-sm">{sub.label}</span>
-                                <span className="text-gray-400 text-sm">{sub.count}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Precio */}
-                <div className="bg-white py-4 px-6 rounded-lg border border-gray-300 mt-6">
-                    <h2 className="text-xl font-black border-b border-red-800 pb-3">Rango de Precio</h2>
-                    <div className="flex justify-center items-center gap-4">
-                        <div className="mt-4">
-                            <label htmlFor="min-price" className="block text-sm font-medium text-red-800">
-                                Min (S/)
-                            </label>
-                            <input
-                                type="number"
-                                id="min-price"
-                                placeholder="0"
-                                className="mt-1 block w-full px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-                            />
-                        </div>
-
-                        <h1 className="text-2xl">-</h1>
-
-                        <div className="mt-4">
-                            <label htmlFor="max-price" className="block text-sm font-medium text-red-800">
-                                Max (S/)
-                            </label>
-                            <input
-                                type="number"
-                                id="max-price"
-                                placeholder="100"
-                                className="mt-1 block w-full px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-                            />
-                        </div>
-                    </div>
-                    <button className=" w-full mt-4 bg-red-800 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                        Aplicar Filtros
-                    </button>
-                </div>
-
-                {/* Marcas */}
-                <div className="bg-white py-4 px-6 rounded-lg border border-gray-300 mt-6">
-                    <h2 className="text-xl font-black border-b border-red-800 pb-3">Marcas</h2>
-                    {marcas.map((marca) => (
-                        <label key={marca} className="flex items-center gap-2 cursor-pointer pt-2">
-                            <input type="checkbox" className="accent-red-600" />
-                            <span>{marca}</span>
-                        </label>
-                    ))}
-                </div>
-
+      {/* CAMBIOS CLAVE AQUÍ:
+        1. pt-24 o pt-28: Crea el espacio suficiente para que el Navbar fijo no tape los productos.
+        2. max-w-[95%] o max-w-none: Expande el diseño horizontalmente para aprovechar tu pantalla.
+      */}
+      <main className="max-w-[95%] w-full mx-auto p-4 md:p-6 pt-24 md:pt-28 flex flex-col md:flex-row gap-6 flex-1">
+        
+        {/* BARRA LATERAL DE FILTROS */}
+        <aside className="w-full md:w-72 shrink-0 flex flex-col gap-4">
+          
+          {/* Categorías */}
+          <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex items-center gap-2 border-b border-gray-100 pb-2 mb-3">
+              <HiSquares2X2 className="text-blue-950 w-4 h-4" />
+              <h2 className="text-xs font-black text-blue-950 uppercase tracking-wider">Categorías</h2>
             </div>
 
-            {/* Contenido productos */}
-            <div className="flex-1">
-                <h2 className="text-2xl font-bold">Abarrotes</h2>
-                <div className="grid grid-cols-5 gap-4">
-                    {productos.map((prod, index) => (
-                        <CardProducto 
-                            key={index}
-                            imagen={prod.imagen}
-                            marca={prod.marca}
-                            nombre={prod.nombre}
-                            precio={prod.precio}
-                        />
-                    ))}
-                </div>
+            <button 
+              onClick={limpiarFiltros}
+              className={`w-full flex justify-between items-center px-3 py-2 rounded-lg text-xs uppercase font-bold transition-all cursor-pointer ${
+                categoriaSeleccionada === '' ? 'bg-blue-950 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <span>Ver Todo</span>
+              <HiChevronRight className="w-3 h-3" />
+            </button>
+
+            <div className="flex flex-col mt-2 gap-1 max-h-48 md:max-h-none overflow-y-auto">
+              {Object.keys(conteoCategorias).map((cat) => (
+                <button 
+                  key={cat} 
+                  onClick={() => {
+                    setCategoriaSeleccionada(cat);
+                    setProductosFiltrados(productos.filter(p => (p.categoria || 'Otros') === cat));
+                  }}
+                  className={`flex justify-between items-center px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-all ${
+                    categoriaSeleccionada === cat 
+                      ? 'bg-yellow-400 text-blue-950 font-bold' 
+                      : 'text-gray-600 hover:bg-gray-50 font-medium'
+                  }`}
+                >
+                  <span className="truncate">{cat}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded font-mono ${
+                    categoriaSeleccionada === cat ? 'bg-blue-950/10 text-blue-950 font-bold' : 'bg-gray-100 text-gray-400'
+                  }`}>
+                    {conteoCategorias[cat]}
+                  </span>
+                </button>
+              ))}
             </div>
-        </div>
-    )
+          </div>
+
+          {/* Rango de Precios */}
+          <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex items-center gap-2 border-b border-gray-100 pb-2 mb-3">
+              <HiFunnel className="text-blue-950 w-4 h-4" />
+              <h2 className="text-xs font-black text-blue-950 uppercase tracking-wider">Precios</h2>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="number"
+                placeholder="Mínimo"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono focus:outline-none focus:border-blue-950"
+              />
+              <input
+                type="number"
+                placeholder="Máximo"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono focus:outline-none focus:border-blue-950"
+              />
+            </div>
+            
+            <div className="flex gap-2 mt-3">
+              <button 
+                onClick={limpiarFiltros}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 rounded-lg font-bold text-xs uppercase cursor-pointer transition-colors"
+              >
+                Limpiar
+              </button>
+              <button 
+                onClick={aplicarFiltros}
+                className="flex-1 bg-blue-950 hover:bg-blue-900 text-white py-2 rounded-lg font-black text-xs uppercase border-b-2 border-yellow-400 cursor-pointer transition-colors"
+              >
+                Filtrar
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* REJILLA DE PRODUCTOS AMPLÍADA */}
+        <section className="flex-1">
+          {productosFiltrados.length === 0 ? (
+            <div className="bg-white text-center py-16 rounded-xl border border-gray-200">
+              <p className="text-gray-400 font-bold text-xs uppercase tracking-widest">Sin resultados</p>
+            </div>
+          ) : (
+            /* Ajustado el responsive grid para pantallas ultra-anchas (hasta 5 o 6 columnas) */
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+              {productosFiltrados.map((prod) => (
+                <CardProducto key={prod.idProducto} producto={prod} />
+              ))}
+            </div>
+          )}
+        </section>
+
+      </main>
+    </div>
+  );
 }

@@ -2,7 +2,6 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { IoMdReturnLeft } from "react-icons/io"
 
 export default function Register() {
     const router = useRouter()
@@ -11,11 +10,16 @@ export default function Register() {
     const [dni, setDni] = useState("")
     const [correo, setCorreo] = useState("")
     const [password, setPassword] = useState("")
-
     const [error, setError] = useState("")
 
     const handleRegistro = async () => {
-        const res = await fetch("http://localhost:5000/api/usuarios", {
+        const apiBase = process.env.NEXT_PUBLIC_API
+        if (!apiBase) {
+            setError("Error de configuración en el servidor")
+            return
+        }
+
+        const res = await fetch(`${apiBase}/usuarios`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ nombre, apellido, dni, correo, password })
@@ -29,57 +33,92 @@ export default function Register() {
     }
 
     return (
-        <div className="flex min-h-screen">
-            <div className="w-3/5 bg-amber-300 flex flex-col items-center justify-center gap-6 p-10">
-                <Image src="/login/loginBanner.png" alt="Login Illustration" width={600} height={400} className="border-amber-400 border-10 rounded-3xl" />
-                <h1 className="font-black text-4xl">¡Ahorro que rinde más!</h1>
-                <p className="font-medium text-lg">Únete a la familia Mass y descubre ofertas exclusivas todos los días cerca de ti.</p>
+        <div className="flex flex-col md:flex-row min-h-screen">
+            <div className="w-full md:w-3/5 bg-yellow-400 flex flex-col items-center justify-center gap-6 p-6 md:p-10 text-center">
+                <div className="relative w-full max-w-md md:max-w-xl aspect-[3/2]">
+                    <Image 
+                        src="/login.webp" 
+                        alt="Login Illustration" 
+                        fill
+                        className="border-yellow-500 border-4 md:border-8 rounded-3xl object-cover" 
+                    />
+                </div>
+                <h1 className="font-black text-3xl md:text-4xl text-blue-950">¡Ahorro que rinde más!</h1>
+                <p className="font-medium text-base md:text-lg text-blue-900 max-w-md">Únete a la familia Mass y descubre ofertas exclusivas todos los días cerca de ti.</p>
             </div>
 
-            <div className="w-2/5 bg-gray-50 px-20 py-30">
-                <a href="/" className="flex gap-2 items-center cursor-pointer hover:text-red-700">
-                    <IoMdReturnLeft />
-                    <p>Regresar al inicio</p>
+            <div className="w-full md:w-2/5 bg-gray-50 px-6 py-10 md:px-16 md:py-12 flex flex-col justify-center">
+                <a href="/" className="flex gap-2 items-center cursor-pointer text-blue-900 hover:text-blue-950 font-bold text-sm mb-4">
+                    <span className="font-mono text-lg">‹</span> Regresar al inicio
                 </a>
 
-                <h1 className="text-4xl font-bold">Crea una cuenta</h1>
-                <p className="text-gray-600 pt-4 text-lg">Regístrate para empezar a comprar y ahorrar.</p>
+                <h1 className="text-3xl md:text-4xl font-black text-blue-950">Crea una cuenta</h1>
+                <p className="text-gray-600 pt-1 text-base">Regístrate para empezar a comprar y ahorrar.</p>
 
-                <div className="pt-8">
+                <div className="pt-4 flex flex-col gap-3">
                     <div>
-                        <label className="block text-lg text-gray-500">Nombre</label>
-                        <input type="text" onChange={(e) => setNombre(e.target.value)}
-                            className="w-full rounded-lg px-4 py-3 mt-2 border-gray-500 border-2 focus:outline-none" />
+                        <label className="block text-xs font-bold text-blue-950">Nombre</label>
+                        <input 
+                            type="text" 
+                            onChange={(e) => setNombre(e.target.value)}
+                            className="w-full rounded-xl px-4 py-2.5 mt-1 border-gray-300 border-2 bg-white text-gray-800 focus:outline-none focus:border-blue-900 text-sm" 
+                        />
                     </div>
-                    <div className="mt-5">
-                        <label className="block text-lg text-gray-500">Apellido</label>
-                        <input type="text" onChange={(e) => setApellido(e.target.value)}
-                            className="w-full rounded-lg px-4 py-3 mt-2 border-gray-500 border-2 focus:outline-none" />
-                    </div>
-                    <div className="mt-5">
-                        <label className="block text-lg text-gray-500">DNI</label>
-                        <input type="text" onChange={(e) => setDni(e.target.value)}
-                            className="w-full rounded-lg px-4 py-3 mt-2 border-gray-500 border-2 focus:outline-none" />
-                    </div>
-                    <div className="mt-5">
-                        <label className="block text-lg text-gray-500">Correo Electrónico</label>
-                        <input type="email" placeholder="ejemplo@correo.com" onChange={(e) => setCorreo(e.target.value)}
-                            className="w-full rounded-lg px-4 py-3 mt-2 border-gray-500 border-2 focus:outline-none" />
-                    </div>
-                    <div className="mt-5">
-                        <label className="block text-lg text-gray-500">Contraseña</label>
-                        <input type="password" placeholder="*******" onChange={(e) => setPassword(e.target.value)}
-                            className="w-full rounded-lg px-4 py-3 mt-2 border-gray-500 border-2 focus:outline-none" />
+                    
+                    <div>
+                        <label className="block text-xs font-bold text-blue-950">Apellido</label>
+                        <input 
+                            type="text" 
+                            onChange={(e) => setApellido(e.target.value)}
+                            className="w-full rounded-xl px-4 py-2.5 mt-1 border-gray-300 border-2 bg-white text-gray-800 focus:outline-none focus:border-blue-900 text-sm" 
+                        />
                     </div>
 
-                    {error && <p className="text-red-600 mt-3 text-sm">{error}</p>}
+                    <div>
+                        <label className="block text-xs font-bold text-blue-950">DNI</label>
+                        <input 
+                            type="text" 
+                            onChange={(e) => setDni(e.target.value)}
+                            className="w-full rounded-xl px-4 py-2.5 mt-1 border-gray-300 border-2 bg-white text-gray-800 focus:outline-none focus:border-blue-900 text-sm" 
+                        />
+                    </div>
 
-                    <button onClick={handleRegistro}
-                        className="bg-red-700 text-white w-full py-3 mt-8 rounded-xl hover:bg-red-600 transition-colors duration-300 cursor-pointer">
+                    <div>
+                        <label className="block text-xs font-bold text-blue-950">Correo Electrónico</label>
+                        <input 
+                            type="email" 
+                            placeholder="ejemplo@correo.com" 
+                            onChange={(e) => setCorreo(e.target.value)}
+                            className="w-full rounded-xl px-4 py-2.5 mt-1 border-gray-300 border-2 bg-white text-gray-800 focus:outline-none focus:border-blue-900 text-sm" 
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-blue-950">Contraseña</label>
+                        <input 
+                            type="password" 
+                            placeholder="*******" 
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full rounded-xl px-4 py-2.5 mt-1 border-gray-300 border-2 bg-white text-gray-800 focus:outline-none focus:border-blue-900 text-sm" 
+                        />
+                    </div>
+
+                    {error && (
+                        <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs text-center font-medium">
+                            {error}
+                        </div>
+                    )}
+
+                    <button 
+                        onClick={handleRegistro}
+                        className="bg-blue-900 hover:bg-blue-950 text-white w-full py-3 mt-4 rounded-xl font-black uppercase tracking-wider text-xs shadow-md transition-colors cursor-pointer"
+                    >
                         Crear Cuenta
                     </button>
 
-                    <p className="text-center mt-9 text-gray-500">¿Ya tienes una cuenta? <a href="/login" className="text-red-700 hover:underline">Inicia Sesión</a></p>
+                    <p className="text-center mt-6 text-sm text-gray-500 font-medium">
+                        ¿Ya tienes una cuenta? <a href="/login" className="text-blue-900 font-bold hover:underline">Inicia Sesión</a>
+                    </p>
                 </div>
             </div>
         </div>
