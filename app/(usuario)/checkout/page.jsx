@@ -12,36 +12,76 @@ export default function Checkout() {
 
     useEffect(() => {
         const usuario = JSON.parse(localStorage.getItem("usuario"))
-        fetch(`${api}/carritos/${usuario.idCarrito}`)
-            .then(r => r.json())
-            .then(d => { setCarrito(d); setLoading(false) })
-    }, [])
+        if (usuario && usuario.idCarrito) {
+            fetch(`${api}/carritos/${usuario.idCarrito}`)
+                .then(r => r.json())
+                .then(d => { setCarrito(d); setLoading(false) })
+                .catch(err => {
+                    console.error("Error al cargar carrito:", err)
+                    setLoading(false)
+                })
+        } else {
+            setLoading(false)
+        }
+    }, [api])
 
     const confirmarPago = async () => {
         setProcesando(true)
-        const usuario = JSON.parse(localStorage.getItem("usuario"))
-        const total = carrito.items.reduce((acc, i) => acc + i.producto.precio * i.cantidad, 0)
+        try {
+            const usuario = JSON.parse(localStorage.getItem("usuario"))
+            
+            // Verificación del ID por si acaso viene mapeado de forma diferente
+            const idDelUsuario = usuario?.idUsuario || usuario?.id
+            
+            if (!idDelUsuario) {
+                alert("No se encontró una sesión de usuario válida.")
+                setProcesando(false)
+                return
+            }
 
-        const detalles = carrito.items.map(i => ({
-            producto: { idProducto: i.producto.idProducto },
-            cantidad: i.cantidad,
-            subtotal: i.producto.precio * i.cantidad
-        }))
+            const total = carrito.items.reduce((acc, i) => acc + i.producto.precio * i.cantidad, 0)
 
-        await fetch(`${api}/ventas`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                usuario: { idUsuario: usuario.idUsuario },
-                total,
-                fecha: new Date().toISOString(),
-                detalles
+            const detalles = carrito.items.map(i => ({
+                producto: { idProducto: Number(i.producto.idProducto) },
+                cantidad: i.cantidad,
+                subtotal: i.producto.precio * i.cantidad
+            }))
+
+            // 1. Intentamos registrar la venta en Spring Boot
+            const respuestaVenta = await fetch(`${api}/ventas`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    usuario: { idUsuario: Number(idDelUsuario) },
+                    total,
+                    fecha: new Date().toISOString(),
+                    detalles
+                })
             })
-        })
 
-        await fetch(`${api}/carritos/${usuario.idCarrito}/limpiar`, { method: "DELETE" })
-        setProcesando(false)
-        setExito(true)
+            // Si el backend responde con error (ej. 500), lanzamos una excepción para detener el flujo
+            if (!respuestaVenta.ok) {
+                throw new Error("Error en el servidor al procesar la venta.")
+            }
+
+            // 2. Solo si la venta fue exitosa, limpiamos el carrito
+            const respuestaLimpiar = await fetch(`${api}/carritos/${usuario.idCarrito}/limpiar`, { 
+                method: "DELETE" 
+            })
+
+            if (respuestaLimpiar.ok) {
+                setExito(true)
+            } else {
+                console.warn("La venta se registró, pero no se pudo limpiar el carrito en base de datos.")
+                setExito(true) // Igual damos éxito porque la venta sí se guardó
+            }
+
+        } catch (error) {
+            console.error(error)
+            alert("Hubo un problema al procesar tu pago. Por favor, inténtalo de nuevo.")
+        } finally {
+            setProcesando(false)
+        }
     }
 
     const total = carrito?.items?.reduce((acc, i) => acc + i.producto.precio * i.cantidad, 0) || 0
@@ -66,7 +106,7 @@ export default function Checkout() {
             <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
                 <h2 className="font-bold text-blue-950 mb-3 text-sm">Resumen</h2>
                 {carrito?.items?.map(i => (
-                    <div key={i.id} className="flex justify-between text-sm py-1.5 border-b last:border-0 text-gray-600">
+                    <div key={i.id || i.producto.idProducto} className="flex justify-between text-sm py-1.5 border-b last:border-0 text-gray-600">
                         <span>{i.producto.nombre} <span className="text-gray-400">x{i.cantidad}</span></span>
                         <span className="font-bold">S/ {(i.producto.precio * i.cantidad).toFixed(2)}</span>
                     </div>
@@ -106,7 +146,7 @@ export default function Checkout() {
                 </div>
             </div>
 
-            <button onClick={confirmarPago} disabled={procesando}
+            <button onClick={confirmarPago} disabled={procesando || !carrito?.items?.length}
                 className="w-full bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-blue-950 font-black py-3.5 rounded-xl text-sm transition-colors cursor-pointer">
                 {procesando ? "Procesando..." : `Pagar S/ ${total.toFixed(2)}`}
             </button>

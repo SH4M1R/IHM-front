@@ -5,21 +5,19 @@ import Image from "next/image"
 
 export default function Login() {
     const router = useRouter()
-    const [identificador, setIdentificador] = useState("") 
+    const [identificador, setIdentificador] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
+    const [loading, setLoading] = useState(false)
+    const api = process.env.NEXT_PUBLIC_API
 
     const handleLogin = async () => {
-        const apiBase = process.env.NEXT_PUBLIC_API
-        if (!apiBase) {
-            setError("Error de configuración en el servidor")
-            return
-        }
-
+        if (!api) { setError("Error de configuración en el servidor"); return }
         setError("")
+        setLoading(true)
 
         try {
-            const resUsuario = await fetch(`${apiBase}/usuarios/login`, {
+            const resUsuario = await fetch(`${api}/usuarios/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ correo: identificador, password })
@@ -27,14 +25,33 @@ export default function Login() {
 
             if (resUsuario.ok) {
                 const usuario = await resUsuario.json()
-                localStorage.setItem("usuario", JSON.stringify(usuario))
+
+                // Buscar carrito existente
+                let idCarrito = null
+                const resCarrito = await fetch(`${api}/carritos/usuario/${usuario.idUsuario}`)
+
+                if (resCarrito.ok) {
+                    const carrito = await resCarrito.json()
+                    idCarrito = carrito.idCarrito
+                } else {
+                    // No tiene carrito, crear uno
+                    const resCrear = await fetch(`${api}/carritos/usuario/${usuario.idUsuario}/crear`, {
+                        method: "POST"
+                    })
+                    if (resCrear.ok) {
+                        const carritoNuevo = await resCrear.json()
+                        idCarrito = carritoNuevo.idCarrito
+                    }
+                }
+
+                localStorage.setItem("usuario", JSON.stringify({ ...usuario, idCarrito }))
                 localStorage.setItem("rol", "usuario")
                 router.push("/")
                 return
             }
 
             if (resUsuario.status === 401) {
-                const resEmpleado = await fetch(`${apiBase}/empleados/login`, {
+                const resEmpleado = await fetch(`${api}/empleados/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ username: identificador, password })
@@ -54,25 +71,30 @@ export default function Login() {
         } catch (err) {
             setError("No se pudo establecer conexión con el servidor")
             console.error(err)
+        } finally {
+            setLoading(false)
         }
+    }
+
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") handleLogin()
     }
 
     return (
         <div className="flex min-h-screen">
             <div className="hidden md:flex w-3/5 bg-yellow-400 flex-col items-center justify-center gap-6 p-10 text-center">
                 <div className="relative w-full max-w-xl aspect-[3/2]">
-                    <Image 
-                        src="/login.webp" 
-                        alt="Login Illustration" 
+                    <Image
+                        src="/login.webp"
+                        alt="Login Illustration"
                         fill
-                        className="border-yellow-500 border-8 rounded-3xl object-cover" 
+                        className="border-yellow-500 border-8 rounded-3xl object-cover"
                     />
                 </div>
                 <h1 className="font-black text-4xl text-blue-950">¡Ahorro que rinde más!</h1>
                 <p className="font-medium text-lg text-blue-900 max-w-md">Únete a la familia Mass y descubre ofertas exclusivas todos los días cerca de ti.</p>
             </div>
 
-            {/* Sección del Formulario: Toma todo el ancho en móviles (w-full) y el 40% en escritorio (md:w-2/5) */}
             <div className="w-full md:w-2/5 bg-gray-50 px-6 py-10 md:px-16 md:py-20 flex flex-col justify-center">
                 <a href="/" className="flex gap-2 items-center cursor-pointer text-blue-900 hover:text-blue-950 font-bold text-sm mb-6">
                     <span className="font-mono text-lg">‹</span> Regresar al inicio
@@ -84,21 +106,25 @@ export default function Login() {
                 <div className="pt-6">
                     <div>
                         <label className="block text-sm font-bold text-blue-950">Correo Electrónico o Usuario</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             placeholder="ejemplo@correo.com o admin"
-                            onChange={(e) => setIdentificador(e.target.value)}
-                            className="w-full rounded-xl px-4 py-3 mt-2 border-gray-300 border-2 bg-white text-gray-800 focus:outline-none focus:border-blue-900" 
+                            value={identificador}
+                            onChange={e => setIdentificador(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            className="w-full rounded-xl px-4 py-3 mt-2 border-gray-300 border-2 bg-white text-gray-800 focus:outline-none focus:border-blue-900"
                         />
                     </div>
-                    
+
                     <div className="mt-4">
                         <label className="block text-sm font-bold text-blue-950">Contraseña</label>
-                        <input 
-                            type="password" 
+                        <input
+                            type="password"
                             placeholder="*******"
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full rounded-xl px-4 py-3 mt-2 border-gray-300 border-2 bg-white text-gray-800 focus:outline-none focus:border-blue-900" 
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            className="w-full rounded-xl px-4 py-3 mt-2 border-gray-300 border-2 bg-white text-gray-800 focus:outline-none focus:border-blue-900"
                         />
                     </div>
 
@@ -113,11 +139,12 @@ export default function Login() {
                         </div>
                     )}
 
-                    <button 
+                    <button
                         onClick={handleLogin}
-                        className="bg-blue-900 hover:bg-blue-950 text-white w-full py-3.5 mt-6 rounded-xl font-black uppercase tracking-wider text-xs shadow-md transition-colors cursor-pointer"
+                        disabled={loading}
+                        className="bg-blue-900 hover:bg-blue-950 text-white w-full py-3.5 mt-6 rounded-xl font-black uppercase tracking-wider text-xs shadow-md transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-default"
                     >
-                        Iniciar Sesión
+                        {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
                     </button>
 
                     <div className="flex flex-col sm:flex-row gap-3 mt-5">

@@ -3,7 +3,8 @@ import { useEffect, useState, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { FaShoppingCart, FaUser, FaChevronDown } from "react-icons/fa"
+import { FaShoppingCart, FaUser, FaChevronDown, FaMapMarkerAlt } from "react-icons/fa"
+import FloatingButtons from "./FloatingButtons"
 import { FiMenu, FiX } from "react-icons/fi"
 
 export default function UsuarioLayout({ children }) {
@@ -15,6 +16,17 @@ export default function UsuarioLayout({ children }) {
     const [cantidadCarrito, setCantidadCarrito] = useState(0)
     const dropdownRef = useRef(null)
     const api = process.env.NEXT_PUBLIC_API
+
+    const fetchCantidadCarrito = async (u) => {
+        if (!u?.idCarrito) return
+        try {
+            const res = await fetch(`${api}/carritos/${u.idCarrito}`)
+            if (!res.ok) return
+            const data = await res.json()
+            const total = data.items?.reduce((acc, i) => acc + i.cantidad, 0) || 0
+            setCantidadCarrito(total)
+        } catch { }
+    }
 
     useEffect(() => {
         const data = localStorage.getItem("usuario")
@@ -34,16 +46,14 @@ export default function UsuarioLayout({ children }) {
         }
     }, [pathname])
 
-    const fetchCantidadCarrito = async (u) => {
-        if (!u?.idCarrito) return
-        try {
-            const res = await fetch(`${api}/carritos/${u.idCarrito}`)
-            if (!res.ok) return
-            const data = await res.json()
-            const total = data.items?.reduce((acc, i) => acc + i.cantidad, 0) || 0
-            setCantidadCarrito(total)
-        } catch { }
-    }
+    useEffect(() => {
+        const onCarritoActualizado = () => {
+            const data = localStorage.getItem("usuario")
+            if (data) fetchCantidadCarrito(JSON.parse(data))
+        }
+        window.addEventListener("carritoActualizado", onCarritoActualizado)
+        return () => window.removeEventListener("carritoActualizado", onCarritoActualizado)
+    }, [])
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -73,7 +83,7 @@ export default function UsuarioLayout({ children }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16 gap-4">
 
-                        {/* Logo → /mass */}
+                        {/* Logo */}
                         <div className="flex items-center">
                             <Link href="/mass">
                                 <Image
@@ -93,11 +103,10 @@ export default function UsuarioLayout({ children }) {
                                 <Link
                                     key={l.href}
                                     href={l.href}
-                                    className={`text-sm font-semibold transition-colors ${
-                                        pathname === l.href
-                                            ? "text-blue-950"
-                                            : "text-blue-800 hover:text-blue-950"
-                                    }`}
+                                    className={`text-sm font-semibold transition-colors ${pathname === l.href
+                                        ? "text-blue-950"
+                                        : "text-blue-800 hover:text-blue-950"
+                                        }`}
                                 >
                                     {l.label}
                                 </Link>
@@ -106,6 +115,15 @@ export default function UsuarioLayout({ children }) {
 
                         {/* Acciones */}
                         <div className="flex items-center gap-1">
+
+                            {/* Sucursal — navega a /sucursal */}
+                            <Link
+                                href="/sucursal"
+                                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-blue-800 hover:bg-yellow-500 transition-colors font-semibold text-sm"
+                            >
+                                <FaMapMarkerAlt size={15} />
+                                <span>Sucursal</span>
+                            </Link>
 
                             {/* Carrito con badge */}
                             <Link
@@ -120,7 +138,7 @@ export default function UsuarioLayout({ children }) {
                                 )}
                             </Link>
 
-                            {/* Usuario logueado → dropdown | no logueado → /login */}
+                            {/* Usuario */}
                             {usuario ? (
                                 <div className="relative hidden lg:block" ref={dropdownRef}>
                                     <button
@@ -175,9 +193,7 @@ export default function UsuarioLayout({ children }) {
                 </div>
 
                 {/* Menú móvil */}
-                <div className={`lg:hidden transition-all duration-300 ease-in-out bg-yellow-400 border-t border-yellow-500 ${
-                    isOpen ? "max-h-72 opacity-100 py-3" : "max-h-0 opacity-0 overflow-hidden"
-                }`}>
+                <div className={`lg:hidden transition-all duration-300 ease-in-out bg-yellow-400 border-t border-yellow-500 ${isOpen ? "max-h-screen opacity-100 py-3" : "max-h-0 opacity-0 overflow-hidden"}`}>
                     <div className="px-4 pt-2 pb-4 space-y-1 flex flex-col">
                         {usuario && (
                             <div className="px-3 py-2 text-sm font-bold text-blue-950 border-b border-yellow-500 mb-1">
@@ -194,6 +210,17 @@ export default function UsuarioLayout({ children }) {
                                 {l.label}
                             </Link>
                         ))}
+
+                        {/* Sucursal en móvil */}
+                        <Link
+                            href="/sucursal"
+                            onClick={() => setIsOpen(false)}
+                            className="flex items-center gap-2 text-base font-medium text-blue-800 hover:bg-yellow-500 px-3 py-2 rounded-md transition-colors"
+                        >
+                            <FaMapMarkerAlt size={14} />
+                            Sucursal
+                        </Link>
+
                         {usuario ? (
                             <>
                                 <Link
@@ -230,6 +257,7 @@ export default function UsuarioLayout({ children }) {
             <footer className="bg-blue-950 text-blue-300 text-center text-xs py-4 font-medium">
                 2026 Tienda Mass — Precios más bajos siempre
             </footer>
+            <FloatingButtons /> 
         </div>
     )
 }
