@@ -1,25 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "./components/Navbar";
-
-
 
 export const metadata: Metadata = {
   title: "Tienda Mass",
   description: "Precios mas bajos siempre",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es">
-      <body>
-        
-            {children}
-          
+      <body className="antialiased bg-gray-50">
+        {children}
       </body>
     </html>
   );
