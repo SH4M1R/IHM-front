@@ -13,12 +13,7 @@ export default function Perfil() {
 
   useEffect(() => {
     const usuario = JSON.parse(localStorage.getItem("usuario") || "{}")
-
-    const id =
-      usuario?.idUsuario ||
-      usuario?.id ||
-      usuario?.idEmpleado
-
+    const id = usuario?.idUsuario || usuario?.id || usuario?.idEmpleado
     setIdUsuario(id)
   }, [])
 
@@ -26,57 +21,69 @@ export default function Perfil() {
     {
       key: "perfil",
       label: "Mi perfil",
-      icon: <HiUser className="w-4 h-4" />,
+      icon: <HiUser className="w-5 h-5" />,
     },
     {
       key: "pedidos",
       label: "Mis pedidos",
-      icon: <HiShoppingBag className="w-4 h-4" />,
+      icon: <HiShoppingBag className="w-5 h-5" />,
     },
   ]
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-10">
-      <h1 className="text-2xl font-black text-blue-950 mb-1">
-        Mi cuenta
-      </h1>
-
-      <p className="text-gray-500 text-sm mb-6">
-        Gestiona tu perfil y revisa tus pedidos
-      </p>
-
-      <div className="flex gap-1 bg-gray-100 rounded-2xl p-1 mb-6">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-              tab === t.key
-                ? "bg-white text-blue-950 shadow-sm"
-                : "text-gray-500 hover:text-blue-950"
-            }`}
-          >
-            {t.icon}
-            {t.label}
-          </button>
-        ))}
+    <div className="max-w-5xl mx-auto px-4 py-10 min-h-[70vh]">
+      {/* Título de la sección */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-black text-blue-950 tracking-tight">
+          Mi cuenta
+        </h1>
+        <p className="text-gray-500 text-sm mt-1">
+          Gestiona tu perfil y revisa el historial de tus pedidos
+        </p>
       </div>
 
-      {tab === "perfil" && (
-        <PerfilForm api={api} />
-      )}
+      {/* Distribución en dos columnas adaptables (Estilo Escritorio E-commerce) */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
+        
+        {/* Barra lateral de navegación */}
+        <div className="flex flex-col gap-1 bg-gray-50 rounded-2xl p-2 border border-gray-200/50 md:col-span-1">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                tab === t.key
+                  ? "bg-blue-950 text-white shadow-sm"
+                  : "text-gray-600 hover:bg-gray-200/50 hover:text-blue-950"
+              }`}
+            >
+              {t.icon}
+              <span>{t.label}</span>
+            </button>
+          ))}
+        </div>
 
-      {tab === "pedidos" &&
-        (idUsuario ? (
-          <PedidosSection
-            api={api}
-            idUsuario={idUsuario}
-          />
-        ) : (
-          <p className="text-center py-10 text-xs text-gray-400">
-            No se pudo validar el identificador de tu cuenta.
-          </p>
-        ))}
+        {/* Columna de contenido principal */}
+        <div className="md:col-span-3 w-full">
+          {tab === "perfil" && (
+            <div className="bg-white border border-gray-150 rounded-2xl shadow-sm">
+              <PerfilForm api={api} />
+            </div>
+          )}
+
+          {tab === "pedidos" &&
+            (idUsuario ? (
+              <PedidosSection api={api} idUsuario={idUsuario} />
+            ) : (
+              <div className="bg-white border border-gray-150 rounded-2xl p-10 text-center">
+                <p className="text-sm text-gray-400">
+                  No se pudo validar el identificador de tu cuenta.
+                </p>
+              </div>
+            ))}
+        </div>
+
+      </div>
     </div>
   )
 }
