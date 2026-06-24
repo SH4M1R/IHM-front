@@ -17,6 +17,7 @@ export default function Login() {
         setLoading(true)
 
         try {
+            // FLUJO PÚBLICO EXCLUSIVO PARA CLIENTES (CORREO ELECTRÓNICO)
             const resUsuario = await fetch(`${api}/usuarios/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -34,7 +35,7 @@ export default function Login() {
                     const carrito = await resCarrito.json()
                     idCarrito = carrito.idCarrito
                 } else {
-                    // No tiene carrito, crear uno
+                    // No tiene carrito, crear uno nuevo
                     const resCrear = await fetch(`${api}/carritos/usuario/${usuario.idUsuario}/crear`, {
                         method: "POST"
                     })
@@ -50,23 +51,7 @@ export default function Login() {
                 return
             }
 
-            if (resUsuario.status === 401) {
-                const resEmpleado = await fetch(`${api}/empleados/login`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username: identificador, password })
-                })
-
-                if (resEmpleado.ok) {
-                    const empleado = await resEmpleado.json()
-                    localStorage.setItem("usuario", JSON.stringify(empleado))
-                    localStorage.setItem("rol", "empleado")
-                    router.push("/adminPanel")
-                    return
-                }
-            }
-
-            setError("Credenciales incorrectas. Verifica tu correo/usuario o contraseña.")
+            setError("Credenciales incorrectas. Verifica tu correo o contraseña.")
 
         } catch (err) {
             setError("No se pudo establecer conexión con el servidor")
@@ -82,33 +67,48 @@ export default function Login() {
 
     return (
         <div className="flex min-h-screen">
+            {/* Panel Izquierdo Lateral con Imagen e Historial de Marca */}
             <div className="hidden md:flex w-3/5 bg-yellow-400 flex-col items-center justify-center gap-6 p-10 text-center">
                 <div className="relative w-full max-w-xl aspect-[3/2]">
                     <Image
                         src="/login.webp"
                         alt="Login Illustration"
                         fill
+                        sizes="(max-width: 768px) 100vw, 60vw"
+                        priority
                         className="border-yellow-500 border-8 rounded-3xl object-cover"
                     />
                 </div>
-                <h1 className="font-black text-4xl text-blue-950">¡Ahorro que rinde más!</h1>
+                {/* ACCESO OCULTO PARA EL PERSONAL DE LA EMPRESA */}
+                <h1 className="font-black text-4xl text-blue-800">
+                    ¡Ahorro que rinde MASS!
+                </h1>
                 <p className="font-medium text-lg text-blue-900 max-w-md">Únete a la familia Mass y descubre ofertas exclusivas todos los días cerca de ti.</p>
             </div>
 
+            {/* Panel Derecho del Formulario Clientes */}
             <div className="w-full md:w-2/5 bg-gray-50 px-6 py-10 md:px-16 md:py-20 flex flex-col justify-center">
                 <a href="/" className="flex gap-2 items-center cursor-pointer text-blue-900 hover:text-blue-950 font-bold text-sm mb-6">
                     <span className="font-mono text-lg">‹</span> Regresar al inicio
                 </a>
-
-                <h1 className="text-3xl md:text-4xl font-black text-blue-950">Bienvenido</h1>
+                <h1 className="font-black text-4xl text-blue-800">
+                    Tiendas {" "}
+                    <span 
+                        onClick={() => router.push("/loginEmpleado")}
+                        className="cursor-default select-none active:text-blue-800 transition-colors hover:text-blue-950"
+                        title="Portal Interno"
+                    >
+                        MASS
+                    </span>
+                </h1>
                 <p className="text-gray-600 pt-2 text-base md:text-lg">Ingresa tus credenciales para continuar comprando.</p>
 
                 <div className="pt-6">
                     <div>
-                        <label className="block text-sm font-bold text-blue-950">Correo Electrónico o Usuario</label>
+                        <label className="block text-sm font-bold text-blue-950">Correo Electrónico</label>
                         <input
                             type="text"
-                            placeholder="ejemplo@correo.com o admin"
+                            placeholder="ejemplo@correo.com"
                             value={identificador}
                             onChange={e => setIdentificador(e.target.value)}
                             onKeyDown={handleKeyDown}
@@ -146,15 +146,6 @@ export default function Login() {
                     >
                         {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
                     </button>
-
-                    <div className="flex flex-col sm:flex-row gap-3 mt-5">
-                        <button className="flex justify-center items-center gap-2 border-2 border-gray-200 bg-white rounded-xl px-4 py-2.5 w-full font-bold text-xs text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">
-                            Google
-                        </button>
-                        <button className="w-full flex justify-center items-center gap-2 border-2 border-gray-200 bg-white rounded-xl px-4 py-2.5 font-bold text-xs text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">
-                            Facebook
-                        </button>
-                    </div>
 
                     <p className="text-center mt-8 text-sm text-gray-500 font-medium">
                         ¿No tienes una cuenta? <a href="/register" className="text-blue-900 font-bold hover:underline">Regístrate aquí</a>

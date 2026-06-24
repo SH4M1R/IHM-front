@@ -160,7 +160,7 @@ export default function UsuarioLayout({ children }) {
                                                 onClick={() => setDropdownOpen(false)}
                                                 className="flex items-center px-4 py-3 text-sm font-semibold text-blue-950 hover:bg-yellow-50 transition-colors"
                                             >
-                                                Editar perfil
+                                                Ver perfil
                                             </Link>
                                             <div className="border-t border-gray-100" />
                                             <button
@@ -228,7 +228,7 @@ export default function UsuarioLayout({ children }) {
                                     onClick={() => setIsOpen(false)}
                                     className="text-base font-medium text-blue-800 hover:bg-yellow-500 px-3 py-2 rounded-md transition-colors"
                                 >
-                                    Editar perfil
+                                    Ver perfil
                                 </Link>
                                 <button
                                     onClick={handleLogout}

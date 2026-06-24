@@ -30,7 +30,6 @@ export default function Checkout() {
         try {
             const usuario = JSON.parse(localStorage.getItem("usuario"))
             
-            // Verificación del ID por si acaso viene mapeado de forma diferente
             const idDelUsuario = usuario?.idUsuario || usuario?.id
             
             if (!idDelUsuario) {
@@ -47,7 +46,6 @@ export default function Checkout() {
                 subtotal: i.producto.precio * i.cantidad
             }))
 
-            // 1. Intentamos registrar la venta en Spring Boot
             const respuestaVenta = await fetch(`${api}/ventas`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -55,16 +53,15 @@ export default function Checkout() {
                     usuario: { idUsuario: Number(idDelUsuario) },
                     total,
                     fecha: new Date().toISOString(),
+                    estado: "pagado",
                     detalles
                 })
             })
 
-            // Si el backend responde con error (ej. 500), lanzamos una excepción para detener el flujo
             if (!respuestaVenta.ok) {
                 throw new Error("Error en el servidor al procesar la venta.")
             }
 
-            // 2. Solo si la venta fue exitosa, limpiamos el carrito
             const respuestaLimpiar = await fetch(`${api}/carritos/${usuario.idCarrito}/limpiar`, { 
                 method: "DELETE" 
             })
@@ -73,7 +70,7 @@ export default function Checkout() {
                 setExito(true)
             } else {
                 console.warn("La venta se registró, pero no se pudo limpiar el carrito en base de datos.")
-                setExito(true) // Igual damos éxito porque la venta sí se guardó
+                setExito(true) 
             }
 
         } catch (error) {
@@ -115,36 +112,6 @@ export default function Checkout() {
                     <span>S/ {total.toFixed(2)}</span>
                 </div>
             </div>
-
-            {/* Pago ficticio }
-            <div className="bg-white rounded-2xl p-5 shadow-sm mb-6">
-                <h2 className="font-bold text-blue-950 mb-3 text-sm">Datos de pago</h2>
-                <div className="flex flex-col gap-3">
-                    {[
-                        { label: "Número de tarjeta", placeholder: "4242 4242 4242 4242" },
-                        { label: "Nombre en la tarjeta", placeholder: "JOHN DOE" },
-                    ].map(f => (
-                        <div key={f.label}>
-                            <label className="text-xs font-bold text-blue-950">{f.label}</label>
-                            <input type="text" placeholder={f.placeholder}
-                                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-1 text-sm focus:outline-none focus:border-blue-900" />
-                        </div>
-                    ))}
-                    <div className="flex gap-3">
-                        <div className="flex-1">
-                            <label className="text-xs font-bold text-blue-950">Vencimiento</label>
-                            <input type="text" placeholder="MM/AA"
-                                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-1 text-sm focus:outline-none focus:border-blue-900" />
-                        </div>
-                        <div className="flex-1">
-                            <label className="text-xs font-bold text-blue-950">CVV</label>
-                            <input type="text" placeholder="123"
-                                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-1 text-sm focus:outline-none focus:border-blue-900" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-            */}
 
             <button onClick={confirmarPago} disabled={procesando || !carrito?.items?.length}
                 className="w-full bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-blue-950 font-black py-3.5 rounded-xl text-sm transition-colors cursor-pointer">

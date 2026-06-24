@@ -109,7 +109,7 @@ export default function Productos() {
     }
 
     if (loading) return (
-        <div className="flex items-center gap-3 text-gray-400 font-medium py-8">
+        <div className="flex items-center gap-3 text-gray-400 font-medium py-8 px-4 sm:px-0">
             <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
@@ -121,12 +121,12 @@ export default function Productos() {
     const activos = productos.filter(p => p.activo).length
 
     return (
-        <div>
-            {/* Header */}
-            <div className="flex items-start justify-between mb-6">
+        <div className="p-4 sm:p-0">
+            {/* Header Responsivo */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 className="text-2xl font-black text-blue-950">Productos</h1>
-                    <div className="flex items-center gap-3 mt-1">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
                         <p className="text-gray-400 text-sm">{productos.length} en total</p>
                         <span className="w-1 h-1 bg-gray-300 rounded-full" />
                         <p className="text-green-600 text-sm font-semibold">{activos} activos</p>
@@ -140,90 +140,126 @@ export default function Productos() {
                 </div>
                 <button
                     onClick={openCreate}
-                    className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black text-sm px-5 py-2.5 rounded-xl transition-colors cursor-pointer"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black text-sm px-5 py-2.5 rounded-xl transition-colors cursor-pointer text-center"
                 >
                     <IconPlus />
                     Nuevo producto
                 </button>
             </div>
 
-            {/* Tabla */}
+            {/* Estado Vacío */}
             {productos.length === 0 ? (
-                <div className="bg-white rounded-2xl shadow-sm flex flex-col items-center justify-center py-20 text-gray-300">
+                <div className="bg-white rounded-2xl shadow-sm flex flex-col items-center justify-center py-20 text-gray-300 border border-gray-100">
                     <IconPackage />
                     <p className="mt-4 font-bold text-gray-400">Sin productos registrados</p>
                     <p className="text-sm text-gray-300 mt-1">Crea el primero con el botón de arriba</p>
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl shadow-sm overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="text-left text-xs font-bold text-gray-400 border-b border-gray-100">
-                                <th className="px-5 py-3.5">Nombre</th>
-                                <th className="px-5 py-3.5">Precio</th>
-                                <th className="px-5 py-3.5">Categoría</th>
-                                <th className="px-5 py-3.5">Estado</th>
-                                <th className="px-5 py-3.5 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {productos.map(p => (
-                                <tr key={p.idProducto} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/60 transition-colors">
-                                    <td className="px-5 py-3.5">
-                                        <div className="flex items-center gap-3">
-                                            {p.imagen ? (
-                                                <img src={p.imagen} alt={p.nombre} className="w-9 h-9 rounded-lg object-cover bg-gray-100 flex-shrink-0" />
+                <>
+                    {/* --- VISTA MÓVIL: Grid de Tarjetas --- */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
+                        {productos.map(p => (
+                            <div key={p.idProducto} className="bg-white p-4 rounded-2xl shadow-xs border border-gray-100 flex flex-col gap-3">
+                                <div className="flex items-start gap-3">
+                                    {p.imagen ? (
+                                        <img src={p.imagen} alt={p.nombre} className="w-14 h-14 rounded-xl object-cover bg-gray-100 shrink-0" />
+                                    ) : (
+                                        <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 text-gray-300">
+                                            <IconPackage />
+                                        </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-bold text-blue-950 text-base truncate">{p.nombre}</h3>
+                                        <p className="text-gray-900 font-bold text-sm mt-0.5">S/ {p.precio?.toFixed(2)}</p>
+                                        <div className="mt-1">
+                                            {p.categoria ? (
+                                                <span className="inline-block text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{p.categoria}</span>
                                             ) : (
-                                                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-gray-300">
-                                                    <IconPackage />
-                                                </div>
+                                                <span className="text-xs text-gray-300">—</span>
                                             )}
-                                            <span className="font-bold text-blue-950">{p.nombre}</span>
                                         </div>
-                                    </td>
-                                    <td className="px-5 py-3.5 text-gray-700 font-medium">
-                                        S/ {p.precio?.toFixed(2)}
-                                    </td>
-                                    <td className="px-5 py-3.5">
-                                        {p.categoria
-                                            ? <span className="text-xs font-bold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">{p.categoria}</span>
-                                            : <span className="text-gray-300">—</span>
-                                        }
-                                    </td>
-                                    <td className="px-5 py-3.5">
-                                        <button
-                                            onClick={() => handleToggleActivo(p)}
-                                            disabled={togglingId === p.idProducto}
-                                            title={p.activo ? "Desactivar producto" : "Activar producto"}
-                                            className={`flex items-center gap-2 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 ${p.activo ? "text-green-500 hover:text-green-700" : "text-gray-300 hover:text-gray-500"}`}
-                                        >
-                                            {p.activo ? <IconToggleOn /> : <IconToggleOff />}
-                                            {p.activo ? "Activo" : "Inactivo"}
-                                        </button>
-                                    </td>
-                                    <td className="px-5 py-3.5">
-                                        <div className="flex items-center gap-1 justify-end">
-                                            <button
-                                                onClick={() => openEdit(p)}
-                                                title="Editar producto"
-                                                className="p-2 rounded-lg text-gray-400 hover:text-blue-900 hover:bg-blue-50 transition-colors cursor-pointer"
-                                            >
-                                                <IconEdit />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(p.idProducto)}
-                                                title="Eliminar producto"
-                                                className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                                            >
-                                                <IconTrash />
-                                            </button>
-                                        </div>
-                                    </td>
+                                    </div>
+                                </div>
+                                
+                                {/* Acciones inferiores */}
+                                <div className="border-t border-gray-50 pt-2 flex items-center justify-between gap-2">
+                                    <button
+                                        onClick={() => handleToggleActivo(p)}
+                                        disabled={togglingId === p.idProducto}
+                                        className={`flex items-center gap-1.5 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 ${p.activo ? "text-green-500" : "text-gray-300"}`}
+                                    >
+                                        {p.activo ? <IconToggleOn /> : <IconToggleOff />}
+                                        {p.activo ? "Activo" : "Inactivo"}
+                                    </button>
+
+                                    <div className="flex gap-1">
+                                        <button onClick={() => openEdit(p)} className="p-2 text-gray-400 hover:text-blue-900 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"><IconEdit /></button>
+                                        <button onClick={() => handleDelete(p.idProducto)} className="p-2 text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"><IconTrash /></button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* --- VISTA DESKTOP: Tabla Tradicional --- */}
+                    <div className="hidden md:block bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="text-left text-xs font-bold text-gray-400 border-b border-gray-100 bg-gray-50/50">
+                                    <th className="px-5 py-3.5">Nombre</th>
+                                    <th className="px-5 py-3.5">Precio</th>
+                                    <th className="px-5 py-3.5">Categoría</th>
+                                    <th className="px-5 py-3.5">Estado</th>
+                                    <th className="px-5 py-3.5 text-right">Acciones</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {productos.map(p => (
+                                    <tr key={p.idProducto} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/60 transition-colors">
+                                        <td className="px-5 py-3.5">
+                                            <div className="flex items-center gap-3">
+                                                {p.imagen ? (
+                                                    <img src={p.imagen} alt={p.nombre} className="w-9 h-9 rounded-lg object-cover bg-gray-100 flex-shrink-0" />
+                                                ) : (
+                                                    <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-gray-300">
+                                                        <IconPackage />
+                                                    </div>
+                                                )}
+                                                <span className="font-bold text-blue-950">{p.nombre}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-5 py-3.5 text-gray-700 font-medium">
+                                            S/ {p.precio?.toFixed(2)}
+                                        </td>
+                                        <td className="px-5 py-3.5">
+                                            {p.categoria
+                                                ? <span className="text-xs font-bold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">{p.categoria}</span>
+                                                : <span className="text-gray-300">—</span>
+                                            }
+                                        </td>
+                                        <td className="px-5 py-3.5">
+                                            <button
+                                                onClick={() => handleToggleActivo(p)}
+                                                disabled={togglingId === p.idProducto}
+                                                title={p.activo ? "Desactivar producto" : "Activar producto"}
+                                                className={`flex items-center gap-2 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 ${p.activo ? "text-green-500 hover:text-green-700" : "text-gray-300 hover:text-gray-500"}`}
+                                            >
+                                                {p.activo ? <IconToggleOn /> : <IconToggleOff />}
+                                                {p.activo ? "Activo" : "Inactivo"}
+                                            </button>
+                                        </td>
+                                        <td className="px-5 py-3.5">
+                                            <div className="flex items-center gap-1 justify-end">
+                                                <button onClick={() => openEdit(p)} title="Editar producto" className="p-2 rounded-lg text-gray-400 hover:text-blue-900 hover:bg-blue-50 transition-colors cursor-pointer"><IconEdit /></button>
+                                                <button onClick={() => handleDelete(p.idProducto)} title="Eliminar producto" className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"><IconTrash /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
             )}
 
             <ProductoModal
