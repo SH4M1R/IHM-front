@@ -90,7 +90,6 @@ export default function Checkout() {
 
     if (exito) return (
         <div className="text-center py-24 px-4">
-            <div className="text-6xl mb-4">✅</div>
             <h2 className="text-2xl font-black text-blue-950 mb-2">¡Pago exitoso!</h2>
             <p className="text-gray-500 mb-6">Tu pedido ha sido registrado correctamente.</p>
             <button onClick={() => router.push("/")} className="bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black px-8 py-3 rounded-xl text-sm cursor-pointer">
@@ -117,7 +116,7 @@ export default function Checkout() {
                 </div>
             </div>
 
-            {/* Pago ficticio */}
+            {/* Pago ficticio }
             <div className="bg-white rounded-2xl p-5 shadow-sm mb-6">
                 <h2 className="font-bold text-blue-950 mb-3 text-sm">Datos de pago</h2>
                 <div className="flex flex-col gap-3">
@@ -145,6 +144,7 @@ export default function Checkout() {
                     </div>
                 </div>
             </div>
+            */}
 
             <button onClick={confirmarPago} disabled={procesando || !carrito?.items?.length}
                 className="w-full bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-blue-950 font-black py-3.5 rounded-xl text-sm transition-colors cursor-pointer">
