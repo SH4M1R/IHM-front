@@ -9,8 +9,11 @@ export default function Register() {
     const [apellido, setApellido] = useState("")
     const [dni, setDni] = useState("")
     const [correo, setCorreo] = useState("")
+    const [telefono, setTelefono] = useState("")
+    const [direccion, setDireccion] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
+    
 
     const handleRegistro = async () => {
         const apiBase = process.env.NEXT_PUBLIC_API
@@ -22,7 +25,7 @@ export default function Register() {
         const res = await fetch(`${apiBase}/usuarios`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nombre, apellido, dni, correo, password })
+            body: JSON.stringify({ nombre, apellido, dni, telefono, direccion, correo, password })
         })
 
         if (res.ok) {
@@ -71,6 +74,30 @@ export default function Register() {
                             type="text" 
                             onChange={(e) => setApellido(e.target.value)}
                             className="w-full rounded-xl px-4 py-2.5 mt-1 border-gray-300 border-2 bg-white text-gray-800 focus:outline-none focus:border-blue-900 text-sm" 
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-blue-950">Número de Teléfono</label>
+                        <input
+                            type="text"
+                            maxLength={9}
+                            placeholder="987654321"
+                            value={telefono}
+                            onChange={(e) =>setTelefono(e.target.value.replace(/\D/g, ""))}
+                            className="w-full rounded-xl px-4 py-2.5 mt-1 border-gray-300 border-2 bg-white text-gray-800 focus:outline-none focus:border-blue-900 text-sm"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-blue-950">
+                            Dirección (Opcional)
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="Av. Ejemplo 123"
+                            value={direccion}
+                            onChange={(e) => setDireccion(e.target.value)}
+                            className="w-full rounded-xl px-4 py-2.5 mt-1 border-gray-300 border-2 bg-white text-gray-800 focus:outline-none focus:border-blue-900 text-sm"
                         />
                     </div>
 
