@@ -57,14 +57,20 @@ export default function EntregaCard({ venta, api, recargar }) {
     }
 
     try {
-      await fetch(`${api}/ventas/${venta.idVenta}/estado`, {
+      const res = await fetch(`${api}/ventas/${venta.idVenta}/estado`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ estado: siguiente }),
       })
+
+      if (!res.ok) {
+        const error = await res.text()
+        console.error("Error al actualizar estado:", error)
+      }
+
       await recargar()
     } catch (e) {
-      console.error(e)
+      console.error("Error de red:", e)
     } finally {
       setActualizando(false)
     }
