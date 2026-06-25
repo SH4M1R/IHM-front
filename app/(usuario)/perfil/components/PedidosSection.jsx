@@ -15,9 +15,8 @@ export default function PedidosSection({ api, idUsuario }) {
       try {
         const res = await fetch(`${api}/ventas/usuario/${idUsuario}`)
         if (res.ok) {
-          const data = await res.json()
-          
-          // .reverse() invierte el orden del array para mostrar los últimos pedidos arriba
+            const data = await res.json()
+          console.log("detalles muestra:", data[0]?.detalles)
           setVentas(data.reverse())
         }
       } catch (error) {
@@ -84,9 +83,9 @@ export default function PedidosSection({ api, idUsuario }) {
               <div className="p-5 flex flex-col gap-4 bg-white border-b border-gray-100 animate-fadeIn">
                 <div className="flex flex-col gap-3.5">
                   {venta.detalles?.map((detalle, index) => {
-                    const precio = Number(detalle.precioUnitario || detalle.precio || 0)
                     const cantidad = Number(detalle.cantidad || 0)
-                    const subtotal = precio * cantidad
+                    const subtotal = Number(detalle.subtotal || 0)
+                    const precio = cantidad > 0 ? subtotal / cantidad : 0
 
                     return (
                       <div key={index} className="flex gap-4 items-center justify-between py-1 border-b border-gray-50 last:border-none">
@@ -113,6 +112,19 @@ export default function PedidosSection({ api, idUsuario }) {
                 <div className="mt-2 bg-gray-50 p-4 rounded-xl border border-gray-100">
                   <BarraProgreso estado={venta.estado} />
                 </div>
+
+                {venta.estado?.toLowerCase() === "entregado" && venta.evidencia && (
+                  <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                    <p className="text-xs font-black text-yellow-700 uppercase tracking-wide mb-2">
+                      Foto de entrega
+                    </p>
+                    <img
+                      src={venta.evidencia}
+                      alt="Evidencia de entrega"
+                      className="w-full max-h-56 object-contain rounded-lg border border-yellow-300"
+                    />
+                  </div>
+                )}
               </div>
             )}
 

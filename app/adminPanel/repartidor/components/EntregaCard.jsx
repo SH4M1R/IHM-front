@@ -76,14 +76,15 @@ export default function EntregaCard({ venta, api, recargar }) {
     }
   }
 
-  const confirmarEntrega = async (foto) => {
+  const confirmarEntrega = async (base64) => {
     setActualizando(true)
-    
-    if (foto) {
-      console.log("Evidencia fotográfica guardada temporalmente (Estático):", foto.name)
-    }
-
     try {
+      await fetch(`${api}/ventas/${venta.idVenta}/evidencia`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ evidencia: base64 }),
+      })
+
       await fetch(`${api}/ventas/${venta.idVenta}/estado`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

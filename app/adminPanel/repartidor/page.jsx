@@ -39,6 +39,21 @@ export default function RepartidorPanel() {
     }
   }
 
+  const handleConfirmarEntrega = async (base64) => {
+    await fetch(`${api}/ventas/${idVenta}/evidencia`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ evidencia: base64 }),
+    })
+    await fetch(`${api}/ventas/${idVenta}/estado`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ estado: "entregado" }),
+    })
+    onClose()
+    recargar()
+  }
+
   useEffect(() => {
     cargarVentas()
   }, [])

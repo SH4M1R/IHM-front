@@ -79,93 +79,105 @@ export default function UsuarioLayout({ children }) {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <nav className="w-full fixed top-0 left-0 z-50 bg-yellow-400 shadow-md">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16 gap-4">
+            <nav className="fixed top-0 left-0 w-full z-50 bg-yellow-400/95 backdrop-blur-md shadow-md">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="flex items-center justify-between h-16">
 
                         {/* Logo */}
-                        <div className="flex items-center">
-                            <Link href="/mass">
-                                <Image
-                                    src="/mass_logo.webp"
-                                    alt="Tienda Mass"
-                                    width={90}
-                                    height={45}
-                                    className="object-contain"
-                                    priority
-                                />
-                            </Link>
-                        </div>
+                        <Link href="/mass">
+                            <Image
+                                src="/mass_logo.webp"
+                                alt="Tienda Mass"
+                                width={90}
+                                height={45}
+                                className="object-contain"
+                                priority
+                            />
+                        </Link>
 
-                        {/* Links desktop */}
-                        <div className="hidden lg:flex items-center space-x-6">
-                            {links.map(l => (
+                        {/* Desktop */}
+                        <div className="hidden sm:flex items-center gap-8">
+                            {links.map((l) => (
                                 <Link
                                     key={l.href}
                                     href={l.href}
-                                    className={`text-sm font-semibold transition-colors ${pathname === l.href
-                                        ? "text-blue-950"
-                                        : "text-blue-800 hover:text-blue-950"
-                                        }`}
+                                    className={`font-semibold transition-all duration-200 ${
+                                        pathname === l.href
+                                            ? "text-blue-950"
+                                            : "text-blue-800 hover:text-blue-950"
+                                    }`}
                                 >
                                     {l.label}
                                 </Link>
                             ))}
+
+                            <Link
+                                href="/sucursal"
+                                className="flex items-center gap-2 text-blue-800 font-semibold hover:text-blue-950"
+                            >
+                                <FaMapMarkerAlt />
+                                Sucursal
+                            </Link>
                         </div>
 
                         {/* Acciones */}
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
 
-                            {/* Sucursal — navega a /sucursal */}
-                            <Link
-                                href="/sucursal"
-                                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-blue-800 hover:bg-yellow-500 transition-colors font-semibold text-sm"
-                            >
-                                <FaMapMarkerAlt size={15} />
-                                <span>Sucursal</span>
-                            </Link>
-
-                            {/* Carrito con badge */}
+                            {/* Carrito */}
                             <Link
                                 href={usuario ? "/carrito" : "/login"}
-                                className="p-2 rounded-full text-blue-800 hover:bg-yellow-500 transition-colors relative"
+                                className="relative p-2 rounded-full hover:bg-yellow-500 transition"
                             >
-                                <FaShoppingCart size={20} />
+                                <FaShoppingCart
+                                    size={20}
+                                    className="text-blue-800"
+                                />
+
                                 {usuario && cantidadCarrito > 0 && (
-                                    <span className="absolute -top-0.5 -right-0.5 bg-red-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center leading-none">
+                                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
                                         {cantidadCarrito > 99 ? "99+" : cantidadCarrito}
                                     </span>
                                 )}
                             </Link>
 
-                            {/* Usuario */}
+                            {/* Usuario Desktop */}
                             {usuario ? (
-                                <div className="relative hidden lg:block" ref={dropdownRef}>
+                                <div
+                                    className="relative hidden lg:block"
+                                    ref={dropdownRef}
+                                >
                                     <button
-                                        onClick={() => setDropdownOpen(!dropdownOpen)}
-                                        className="flex items-center gap-2 px-3 py-1.5 rounded-full text-blue-800 hover:bg-yellow-500 transition-colors font-semibold text-sm cursor-pointer"
+                                        onClick={() =>
+                                            setDropdownOpen(!dropdownOpen)
+                                        }
+                                        className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-yellow-500 transition"
                                     >
-                                        <FaUser size={16} />
-                                        <span>{usuario.nombre}</span>
+                                        <FaUser className="text-blue-800" />
+                                        <span className="font-semibold text-blue-800">
+                                            {usuario.nombre}
+                                        </span>
+
                                         <FaChevronDown
-                                            size={11}
-                                            className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                                            className={`text-blue-800 transition-transform ${
+                                                dropdownOpen
+                                                    ? "rotate-180"
+                                                    : ""
+                                            }`}
                                         />
                                     </button>
 
                                     {dropdownOpen && (
-                                        <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
+                                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl overflow-hidden">
                                             <Link
                                                 href="/perfil"
-                                                onClick={() => setDropdownOpen(false)}
-                                                className="flex items-center px-4 py-3 text-sm font-semibold text-blue-950 hover:bg-yellow-50 transition-colors"
+                                                className="block px-4 py-3 hover:bg-gray-100"
                                             >
                                                 Ver perfil
                                             </Link>
-                                            <div className="border-t border-gray-100" />
+
                                             <button
                                                 onClick={handleLogout}
-                                                className="w-full text-left px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                                                className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50"
                                             >
                                                 Cerrar sesión
                                             </button>
@@ -175,80 +187,128 @@ export default function UsuarioLayout({ children }) {
                             ) : (
                                 <Link
                                     href="/login"
-                                    className="hidden lg:flex p-2 rounded-full text-blue-800 hover:bg-yellow-500 transition-colors"
+                                    className="hidden sm:flex p-2 rounded-full hover:bg-yellow-500"
                                 >
-                                    <FaUser size={19} />
+                                    <FaUser
+                                        size={19}
+                                        className="text-blue-800"
+                                    />
                                 </Link>
                             )}
 
-                            {/* Hamburger móvil */}
+                            {/* Botón hamburguesa */}
                             <button
-                                onClick={() => setIsOpen(!isOpen)}
-                                className="lg:hidden p-2 rounded-full text-blue-800 hover:bg-yellow-500 transition-colors focus:outline-none"
+                                onClick={() => setIsOpen(true)}
+                                className="sm:hidden p-2 rounded-lg hover:bg-yellow-500 transition"
                             >
-                                {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+                                <FiMenu
+                                    size={24}
+                                    className="text-blue-800"
+                                />
                             </button>
                         </div>
                     </div>
                 </div>
-
-                {/* Menú móvil */}
-                <div className={`lg:hidden transition-all duration-300 ease-in-out bg-yellow-400 border-t border-yellow-500 ${isOpen ? "max-h-screen opacity-100 py-3" : "max-h-0 opacity-0 overflow-hidden"}`}>
-                    <div className="px-4 pt-2 pb-4 space-y-1 flex flex-col">
-                        {usuario && (
-                            <div className="px-3 py-2 text-sm font-bold text-blue-950 border-b border-yellow-500 mb-1">
-                                Hola, {usuario.nombre}
-                            </div>
-                        )}
-                        {links.map(l => (
-                            <Link
-                                key={l.href}
-                                href={l.href}
-                                onClick={() => setIsOpen(false)}
-                                className="text-base font-medium text-blue-800 hover:bg-yellow-500 px-3 py-2 rounded-md transition-colors"
-                            >
-                                {l.label}
-                            </Link>
-                        ))}
-
-                        {/* Sucursal en móvil */}
-                        <Link
-                            href="/sucursal"
-                            onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-2 text-base font-medium text-blue-800 hover:bg-yellow-500 px-3 py-2 rounded-md transition-colors"
-                        >
-                            <FaMapMarkerAlt size={14} />
-                            Sucursal
-                        </Link>
-
-                        {usuario ? (
-                            <>
-                                <Link
-                                    href="/perfil"
-                                    onClick={() => setIsOpen(false)}
-                                    className="text-base font-medium text-blue-800 hover:bg-yellow-500 px-3 py-2 rounded-md transition-colors"
-                                >
-                                    Ver perfil
-                                </Link>
-                                <button
-                                    onClick={handleLogout}
-                                    className="text-left text-base font-medium text-red-700 hover:bg-yellow-500 px-3 py-2 rounded-md transition-colors cursor-pointer"
-                                >
-                                    Cerrar sesión
-                                </button>
-                            </>
-                        ) : (
-                            <Link
-                                href="/login"
-                                onClick={() => setIsOpen(false)}
-                                className="text-base font-medium text-blue-800 hover:bg-yellow-500 px-3 py-2 rounded-md transition-colors"
-                            >
-                                Iniciar sesión
-                            </Link>
-                        )}
-                    </div>
-                </div>
             </nav>
+
+            {/* Overlay */}
+            <div
+                className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 lg:hidden ${
+                    isOpen
+                        ? "opacity-100 visible"
+                        : "opacity-0 invisible"
+                }`}
+                onClick={() => setIsOpen(false)}
+            />
+
+            {/* Sidebar */}
+            <aside
+                className={`fixed top-0 left-0 h-full w-72 bg-yellow-500 shadow-2xl z-50 transform transition-transform duration-300 lg:hidden ${
+                    isOpen ? "translate-x-0" : "-translate-x-full"
+                }`}
+            >
+                <div className="flex items-center justify-between p-5 border-b">
+                    <Image
+                        src="/mass_logo.webp"
+                        alt="Mass"
+                        width={90}
+                        height={45}
+                    />
+
+                    <button
+                        onClick={() => setIsOpen(false)}
+                        className="p-2 rounded-full hover:bg-yellow-400"
+                    >
+                        <FiX size={24} />
+                    </button>
+                </div>
+
+                {usuario && (
+                    <div className="p-5 border-b">
+                        <p className="text-gray-500 text-sm">
+                            Bienvenido
+                        </p>
+
+                        <p className="font-bold text-blue-950">
+                            {usuario.nombre}
+                        </p>
+                    </div>
+                )}
+
+                <div className="flex flex-col p-4 gap-2">
+
+                    {links.map((l) => (
+                        <Link
+                            key={l.href}
+                            href={l.href}
+                            onClick={() => setIsOpen(false)}
+                            className={`px-4 py-3 rounded-xl font-semibold transition ${
+                                pathname === l.href
+                                    ? "bg-yellow-400 text-blue-950"
+                                    : "text-gray-700 hover:bg-yellow-300"
+                            }`}
+                        >
+                            {l.label}
+                        </Link>
+                    ))}
+
+                    <Link
+                        href="/sucursal"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-yellow-300 font-semibold"
+                    >
+                        <FaMapMarkerAlt />
+                        Sucursal
+                    </Link>
+
+                    {usuario ? (
+                        <>
+                            <Link
+                                href="/perfil"
+                                onClick={() => setIsOpen(false)}
+                                className="px-4 py-3 rounded-xl text-gray-700 hover:bg-yellow-300 font-semibold"
+                            >
+                                Mi perfil
+                            </Link>
+
+                            <button
+                                onClick={handleLogout}
+                                className="text-left px-4 py-3 rounded-xl text-red-600 hover:bg-yellow-300 font-semibold"
+                            >
+                                Cerrar sesión
+                            </button>
+                        </>
+                    ) : (
+                        <Link
+                            href="/login"
+                            onClick={() => setIsOpen(false)}
+                            className="px-4 py-3 rounded-xl bg-blue-950 text-white text-center font-semibold"
+                        >
+                            Iniciar sesión
+                        </Link>
+                    )}
+                </div>
+            </aside>
 
             <main className="flex-1 pt-16">
                 {children}
